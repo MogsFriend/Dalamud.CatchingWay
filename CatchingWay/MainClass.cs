@@ -25,20 +25,28 @@ namespace CatchingWay
         public string Name => "CatchingWay";
 
         internal string ffxiv_cfg = "My Games\\FINAL FANTASY XIV - A Realm Reborn\\FFXIV.cfg";
-        internal List<FileSystemWatcher> WatcherList = new List<FileSystemWatcher>();
-
+        internal List<FileSystemWatcher> WatcherList;
 
         public CatchingWay()
         {
-            ManagingWay(Path.Combine(MYDOCUMENT, ffxiv_cfg), '\t', "ScreenShotDir");
-            ManagingWay(Path.Combine(Environment.CurrentDirectory, "ReShade.ini"), '=', "SavePath");
+            if (File.Exists(Path.Combine(Environment.CurrentDirectory, "pid.txt")))
+            {
+                Dispose(); // block multiple ffxiv client running dalamud (access violation)
+            }
+            else
+            {
+                WatcherList = new();
+                ManagingWay(Path.Combine(MYDOCUMENT, ffxiv_cfg), '\t', "ScreenShotDir");
+                ManagingWay(Path.Combine(Environment.CurrentDirectory, "ReShade.ini"), '=', "SavePath");
+
+                File.WriteAllText("pid.txt", Environment.ProcessId.ToString());
+            }
         }
 
         private void ManagingWay(string cfgpath, char sep, string key)
         {
             FileSystemWatcher Watcher;
             string keydir = "";
-
             if (File.Exists(cfgpath))
             {
                 string[] lines = File.ReadAllLines(cfgpath);
@@ -50,7 +58,6 @@ namespace CatchingWay
                     }
                 }
             }
-
             if (Directory.Exists(keydir))
             {
                 Watcher = new(keydir)
@@ -66,7 +73,7 @@ namespace CatchingWay
 
         private void WatchingWay(object sender, FileSystemEventArgs e)
         {
-            var info = GettingWay();
+            JObject info = GettingWay();
             new Thread(new ThreadStart(() =>
             {
                 Thread.Sleep(2500);
@@ -74,8 +81,8 @@ namespace CatchingWay
                 {
                     if (e.FullPath.EndsWith(".png"))
                     {
-                        var png = File.ReadAllBytes(e.FullPath);
-                        var header_position = 0;
+                        byte[] png = File.ReadAllBytes(e.FullPath);
+                        int header_position = 0;
                         using (MemoryStream ms = new(png))
                         {
                             for(;ms.Position + 8 <= ms.Length;)
@@ -128,7 +135,7 @@ namespace CatchingWay
                             stream.Write(heading, 0, heading.Length);
                             stream.Write(zoneid, 0, zoneid.Length);
                             stream.Write(jobid, 0, jobid.Length);
-                            var newpng = png.Skip(header_position).ToArray();
+                            byte[] newpng = png.Skip(header_position).ToArray();
                             stream.Write(newpng, 0, newpng.Length);
 
                             using FileStream fs = new(e.FullPath, FileMode.Open);
@@ -147,9 +154,13 @@ namespace CatchingWay
         {
             try
             {
-                for(var i = 0; i < WatcherList.Count; i++)
+                if (WatcherList != null)
                 {
-                    WatcherList[i].Dispose();
+                    File.Delete(Path.Combine(Environment.CurrentDirectory, "pid.txt"));
+                    for (var i = 0; i < WatcherList.Count; i++)
+                    {
+                        WatcherList[i].Dispose();
+                    }
                 }
             }
             catch { }
