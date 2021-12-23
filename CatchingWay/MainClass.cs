@@ -133,8 +133,6 @@ namespace CatchingWay
                             byte[] jobid = CreateTextChunk("JobID", info["job"].ToString());
                             byte[] zoneid = CreateTextChunk("ZoneID", info["zone"].ToString());
 
-                            stream.SetLength(stream.Length + author.Length + copyright.Length + date.Length + software.Length + posx.Length + posy.Length + posz.Length + heading.Length + jobid.Length + zoneid.Length);
-
                             stream.Write(author, 0, author.Length);
                             stream.Write(copyright, 0, copyright.Length);
                             stream.Write(date, 0, date.Length);
