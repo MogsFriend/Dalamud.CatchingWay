@@ -17,13 +17,16 @@ namespace CatchingWay
     {
         [PluginService] public static ChatGui ChatGui { get; private set; } = null!;
         [PluginService] public static ClientState ClientState { get; private set; } = null!;
-        public string Name => "CatchingWay";
+
+        internal static uint[] crcTable;
         internal static string CopyRightText = "SQUARE ENIX CO.,LTD. All Rights Reserved. FINAL FANTASY XIV";
         internal static string MYDOCUMENT = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+
+        public string Name => "CatchingWay";
+
         internal string ffxiv_cfg = "My Games\\FINAL FANTASY XIV - A Realm Reborn\\FFXIV.cfg";
         internal List<FileSystemWatcher> WatcherList = new List<FileSystemWatcher>();
 
-        private static uint[] crcTable;
 
         public CatchingWay()
         {
@@ -59,24 +62,6 @@ namespace CatchingWay
                 Watcher.EnableRaisingEvents = true;
                 WatcherList.Add(Watcher);
             }
-        }
-
-        private byte[] CreateItxtChunk(string keyword, string data)
-        {
-            byte[] itxt = Encoding.UTF8.GetBytes($"iTXt{keyword}\0\0\0\0\0{data}");
-            byte[] itxt_len = BitConverter.GetBytes(itxt.Length - 4);
-            uint CRC = CheckingWay(itxt, 0, itxt.Length, 0);
-            Array.Reverse(itxt_len);
-            return itxt_len.Concat(itxt).Concat(BitConverter.GetBytes(CRC)).ToArray();
-        }
-
-        private byte[] CreateTextChunk(string keyword, string data)
-        {
-            byte[] itxt = Encoding.UTF8.GetBytes($"tEXt{keyword}\0{data}");
-            byte[] itxt_len = BitConverter.GetBytes(itxt.Length - 4);
-            uint CRC = CheckingWay(itxt, 0, itxt.Length, 0);
-            Array.Reverse(itxt_len);
-            return itxt_len.Concat(itxt).Concat(BitConverter.GetBytes(CRC)).ToArray();
         }
 
         private void WatchingWay(object sender, FileSystemEventArgs e)
@@ -174,7 +159,7 @@ namespace CatchingWay
             }
         }
 
-        private JObject GettingWay()
+        private static JObject GettingWay()
         {
             try
             {
@@ -201,6 +186,25 @@ namespace CatchingWay
                     ["heading"] = 0
                 };
             }
+        }
+
+        private static byte[] ChunkingWay(string data)
+        {
+            byte[] itxt = Encoding.UTF8.GetBytes(data);
+            byte[] itxt_len = BitConverter.GetBytes(itxt.Length - 4);
+            uint CRC = CheckingWay(itxt, 0, itxt.Length, 0);
+            Array.Reverse(itxt_len);
+            return itxt_len.Concat(itxt).Concat(BitConverter.GetBytes(CRC)).ToArray();
+        }
+
+        private static byte[] CreateItxtChunk(string keyword, string data)
+        {
+            return ChunkingWay($"iTXt{keyword}\0\0\0\0\0{data}");
+        }
+
+        private static byte[] CreateTextChunk(string keyword, string data)
+        {
+            return ChunkingWay($"tEXt{keyword}\0{data}");
         }
 
         private static uint CheckingWay(byte[] data, int offset, int length, int crc)
