@@ -27,11 +27,11 @@ namespace CatchingWay
 
         public CatchingWay()
         {
-            CreateWatcher(Path.Combine(MYDOCUMENT, ffxiv_cfg), '\t', "ScreenShotDir");
-            CreateWatcher(Path.Combine(Environment.CurrentDirectory, "ReShade.ini"), '=', "SavePath");
+            ManagingWay(Path.Combine(MYDOCUMENT, ffxiv_cfg), '\t', "ScreenShotDir");
+            ManagingWay(Path.Combine(Environment.CurrentDirectory, "ReShade.ini"), '=', "SavePath");
         }
 
-        private void CreateWatcher(string cfgpath, char sep, string key)
+        private void ManagingWay(string cfgpath, char sep, string key)
         {
             FileSystemWatcher Watcher;
             string keydir = "";
@@ -55,7 +55,7 @@ namespace CatchingWay
                     Filter = "",
                     NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName,
                 };
-                Watcher.Created += Watcher_Created;
+                Watcher.Created += WatchingWay;
                 Watcher.EnableRaisingEvents = true;
                 WatcherList.Add(Watcher);
             }
@@ -65,7 +65,7 @@ namespace CatchingWay
         {
             byte[] itxt = Encoding.UTF8.GetBytes($"iTXt{keyword}\0\0\0\0\0{data}");
             byte[] itxt_len = BitConverter.GetBytes(itxt.Length - 4);
-            uint CRC = CRC32(itxt, 0, itxt.Length, 0);
+            uint CRC = CheckingWay(itxt, 0, itxt.Length, 0);
             Array.Reverse(itxt_len);
             return itxt_len.Concat(itxt).Concat(BitConverter.GetBytes(CRC)).ToArray();
         }
@@ -74,14 +74,14 @@ namespace CatchingWay
         {
             byte[] itxt = Encoding.UTF8.GetBytes($"tEXt{keyword}\0{data}");
             byte[] itxt_len = BitConverter.GetBytes(itxt.Length - 4);
-            uint CRC = CRC32(itxt, 0, itxt.Length, 0);
+            uint CRC = CheckingWay(itxt, 0, itxt.Length, 0);
             Array.Reverse(itxt_len);
             return itxt_len.Concat(itxt).Concat(BitConverter.GetBytes(CRC)).ToArray();
         }
 
-        private void Watcher_Created(object sender, FileSystemEventArgs e)
+        private void WatchingWay(object sender, FileSystemEventArgs e)
         {
-            var info = GenInfo();
+            var info = GettingWay();
             new Thread(new ThreadStart(() =>
             {
                 Thread.Sleep(2500);
@@ -174,7 +174,7 @@ namespace CatchingWay
             }
         }
 
-        private JObject GenInfo()
+        private JObject GettingWay()
         {
             try
             {
@@ -203,7 +203,7 @@ namespace CatchingWay
             }
         }
 
-        private static uint CRC32(byte[] data, int offset, int length, int crc)
+        private static uint CheckingWay(byte[] data, int offset, int length, int crc)
         {
             uint c;
             if (crcTable == null)
