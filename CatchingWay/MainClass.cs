@@ -9,6 +9,7 @@ using Newtonsoft.Json.Linq;
 using System.Text;
 using System.Linq;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 #pragma warning disable CA1416
 namespace CatchingWay
@@ -31,16 +32,25 @@ namespace CatchingWay
         {
             if (File.Exists(Path.Combine(Environment.CurrentDirectory, "pid.txt")))
             {
-                Dispose(); // block multiple ffxiv client running dalamud (access violation)
+                string pid = File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "pid.txt"));
+                if (Process.GetProcessById(int.Parse(pid)) != null)
+                {
+                    ChatGui.PrintChat(new() { Message = "Automatically Disabled", Type = Dalamud.Game.Text.XivChatType.SystemMessage });
+                }
             }
             else
             {
-                WatcherList = new();
-                ManagingWay(Path.Combine(MYDOCUMENT, ffxiv_cfg), '\t', "ScreenShotDir");
-                ManagingWay(Path.Combine(Environment.CurrentDirectory, "ReShade.ini"), '=', "SavePath");
-
-                File.WriteAllText("pid.txt", Environment.ProcessId.ToString());
+                Init();
             }
+        }
+
+        private void Init()
+        {
+            WatcherList = new();
+            ManagingWay(Path.Combine(MYDOCUMENT, ffxiv_cfg), '\t', "ScreenShotDir");
+            ManagingWay(Path.Combine(Environment.CurrentDirectory, "ReShade.ini"), '=', "SavePath");
+
+            File.WriteAllText("pid.txt", Environment.ProcessId.ToString());
         }
 
         private void ManagingWay(string cfgpath, char sep, string key)
