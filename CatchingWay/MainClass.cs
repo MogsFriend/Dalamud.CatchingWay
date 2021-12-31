@@ -16,6 +16,7 @@ namespace CatchingWay
 {
     public class CatchingWay : IDalamudPlugin, IDisposable
     {
+        internal static readonly DateTime UnixEpoch = new(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         [PluginService] public static ChatGui ChatGui { get; private set; } = null!;
         [PluginService] public static ClientState ClientState { get; private set; } = null!;
 
@@ -51,6 +52,38 @@ namespace CatchingWay
             ManagingWay(Path.Combine(Environment.CurrentDirectory, "ReShade.ini"), '=', "SavePath");
 
             File.WriteAllText("pid.txt", Environment.ProcessId.ToString());
+        }
+
+        public static int GetCurrentUnixTimestamp()
+        {
+            var now = DateTime.Now.ToLocalTime();
+            var span = now - new DateTime(1970, 1, 1, 0, 0, 0, 0).ToLocalTime();
+            int timestamp = (int)span.TotalSeconds;
+            return timestamp;
+        }
+
+        public static long GetCurrentUnixTimestampMillis()
+        {
+            DateTime localDateTime, univDateTime;
+            localDateTime = DateTime.Now;
+            univDateTime = localDateTime.ToUniversalTime();
+            return (long)(univDateTime - UnixEpoch).TotalMilliseconds;
+        }
+
+        private double EorzeaTime()
+        {
+            return GetCurrentUnixTimestampMillis() / 175000d;
+        }
+
+        private void CalculateWeather()
+        {
+            var unix = GetCurrentUnixTimestamp();
+            var atheris = unix / 175;
+            var increment = (atheris + 8 - (atheris % 8)) % 24;
+            var totaldays = (uint)(unix / 4200 << 32);
+            var calcbase = totaldays * 100 + increment;
+            var step1 = (calcbase << 11) ^ calcbase;
+            var step2 = (uint)(step1 >> 8) ^ step1;
         }
 
         private void ManagingWay(string cfgpath, char sep, string key)
